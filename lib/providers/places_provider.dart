@@ -9,6 +9,14 @@ class PlacesNotifier extends Notifier<List<FavoritePlace>> {
     state = [place, ...state];
   }
 
+  void addFavoritePlaceAtIndex(int index, FavoritePlace place) {
+    state = [
+      ...state.sublist(0, index),
+      place,
+      ...state.sublist(index, state.length),
+    ];
+  }
+
   void deleteFavoritePlace(int index) {
     state = [
       ...state.sublist(0, index),

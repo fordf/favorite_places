@@ -1,6 +1,7 @@
 import 'package:favorite_places/models/favorite_place.dart';
 import 'package:favorite_places/providers/places_provider.dart';
 import 'package:favorite_places/screens/new_place_form.dart';
+import 'package:favorite_places/screens/place_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -20,13 +21,33 @@ class _PlacesListState extends ConsumerState<PlacesList> {
     );
   }
 
-  void _onDeletePlace(index) {
+  void _onDeletePlace(int index, FavoritePlace place) {
     ref.read(placesNotifierProvider.notifier).deleteFavoritePlace(index);
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${place.title} removed'),
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {
+            ref
+                .read(placesNotifierProvider.notifier)
+                .addFavoritePlaceAtIndex(index, place);
+          },
+        ),
+      ),
+    );
+  }
+
+  void _onSelectPlace(FavoritePlace place) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (ctx) => PlaceDetail(place: place)),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    print('building');
     final places = ref.watch(placesNotifierProvider);
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
@@ -36,7 +57,7 @@ class _PlacesListState extends ConsumerState<PlacesList> {
           'Your Places',
           style: textTheme.titleLarge,
         ),
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.black54,
         // backgroundColor: Theme.of(context).colorScheme.shadow,
         actions: [
           IconButton(
@@ -63,12 +84,17 @@ class _PlacesListState extends ConsumerState<PlacesList> {
                   // ),
                 ),
                 onDismissed: (d) {
-                  _onDeletePlace(i);
+                  _onDeletePlace(i, places[i]);
                 },
-                child: ListTile(
-                  leading: Text(
-                    places[i].title,
-                    style: textTheme.titleMedium,
+                child: InkWell(
+                  onTap: () {
+                    _onSelectPlace(places[i]);
+                  },
+                  child: ListTile(
+                    leading: Text(
+                      places[i].title,
+                      style: textTheme.titleMedium,
+                    ),
                   ),
                 ),
               ),
