@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:favorite_places/models/favorite_place.dart';
 import 'package:favorite_places/providers/places_provider.dart';
+import 'package:favorite_places/widgets/file_form_field.dart';
+// import 'package:favorite_places/widgets/image_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 
 class NewPlaceForm extends ConsumerStatefulWidget {
   const NewPlaceForm({super.key});
@@ -14,7 +17,9 @@ class NewPlaceForm extends ConsumerStatefulWidget {
 class _NewPlaceFormState extends ConsumerState<NewPlaceForm> {
   final formKey = GlobalKey<FormState>();
   late String placeTitle;
+  File? _image;
   bool isSubmitted = false;
+  String? imageErrorText;
 
   void _onAddPlace() {
     setState(() {
@@ -22,17 +27,14 @@ class _NewPlaceFormState extends ConsumerState<NewPlaceForm> {
     });
     if (!formKey.currentState!.validate()) return;
     formKey.currentState!.save();
-    final place = FavoritePlace(title: placeTitle);
+    final place = FavoritePlace(title: placeTitle, image: _image!);
     ref.read(placesNotifierProvider.notifier).addFavoritePlace(place);
     Navigator.of(context).pop();
   }
 
-  // String? get _errorText {
-  //   if (text.isEmpty) {
-  //     return 'Required';
-  //   }
-  //   return null;
-  // }
+  void onAddImage(File image) {
+    _image = image;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,13 +54,32 @@ class _NewPlaceFormState extends ConsumerState<NewPlaceForm> {
                     ? AutovalidateMode.onUserInteraction
                     : AutovalidateMode.disabled,
                 maxLength: 30,
-                decoration: const InputDecoration(labelText: 'Name'),
+                decoration: const InputDecoration(
+                  labelText: 'Name',
+                ),
                 style: const TextStyle(color: Colors.white, fontSize: 22),
                 autocorrect: false,
                 validator: (value) =>
                     value == null || value.isEmpty ? 'Name required' : null,
                 onSaved: (newValue) {
                   placeTitle = newValue!;
+                },
+              ),
+              const SizedBox(
+                height: 15,
+              ),
+              FileFormField(
+                // autovalidateMode: AutovalidateMode.always,
+                errorColor:
+                    isSubmitted ? Theme.of(context).colorScheme.error : null,
+                validator: (imageFile) {
+                  if (imageFile == null) {
+                    return 'Image required';
+                  }
+                  return null;
+                },
+                onSaved: (File? imageFile) {
+                  _image = imageFile;
                 },
               ),
               const SizedBox(

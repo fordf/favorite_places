@@ -13,6 +13,11 @@ class PlaceDetail extends StatelessWidget {
         title: Text(place.title),
         backgroundColor: Colors.black54,
       ),
+      body: Image.file(
+        place.image,
+        fit: BoxFit.cover,
+        width: double.infinity,
+      ),
     );
   }
 }
