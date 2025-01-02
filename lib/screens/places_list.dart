@@ -1,9 +1,9 @@
-import 'package:favorite_places/models/favorite_place.dart';
-import 'package:favorite_places/providers/places_provider.dart';
-import 'package:favorite_places/screens/new_place_form.dart';
-import 'package:favorite_places/screens/place_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:favorite_places/models/place.dart';
+import 'package:favorite_places/providers/places_provider.dart';
+import 'package:favorite_places/screens/new_place_form.dart';
+import 'package:favorite_places/widgets/place_list_tile.dart';
 
 class PlacesList extends ConsumerStatefulWidget {
   const PlacesList({super.key});
@@ -21,7 +21,7 @@ class _PlacesListState extends ConsumerState<PlacesList> {
     );
   }
 
-  void _onDeletePlace(int index, FavoritePlace place) {
+  void _onDeletePlace(int index, Place place) {
     ref.read(placesNotifierProvider.notifier).deleteFavoritePlace(index);
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -37,12 +37,6 @@ class _PlacesListState extends ConsumerState<PlacesList> {
           },
         ),
       ),
-    );
-  }
-
-  void _onSelectPlace(FavoritePlace place) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (ctx) => PlaceDetail(place: place)),
     );
   }
 
@@ -73,29 +67,15 @@ class _PlacesListState extends ConsumerState<PlacesList> {
                 style: textTheme.titleMedium,
               ),
             )
-          : ListView.builder(
-              itemCount: places.length,
-              itemBuilder: (ctx, i) => Dismissible(
-                key: ValueKey(places[i]),
-                background: Container(
-                  color: Theme.of(context).colorScheme.error,
-                  // margin: EdgeInsets.symmetric(
-                  //   horizontal: Theme.of(context).cardTheme.margin!.horizontal,
-                  // ),
-                ),
-                onDismissed: (d) {
-                  _onDeletePlace(i, places[i]);
-                },
-                child: InkWell(
-                  onTap: () {
-                    _onSelectPlace(places[i]);
+          : Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListView.builder(
+                itemCount: places.length,
+                itemBuilder: (ctx, i) => PlaceListTile(
+                  place: places[i],
+                  onDeletePlace: () {
+                    _onDeletePlace(i, places[i]);
                   },
-                  child: ListTile(
-                    leading: Text(
-                      places[i].title,
-                      style: textTheme.titleMedium,
-                    ),
-                  ),
                 ),
               ),
             ),

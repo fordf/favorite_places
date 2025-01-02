@@ -1,15 +1,15 @@
-import 'package:favorite_places/models/favorite_place.dart';
+import 'package:favorite_places/models/place.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class PlacesNotifier extends Notifier<List<FavoritePlace>> {
+class PlacesNotifier extends Notifier<List<Place>> {
   @override
-  List<FavoritePlace> build() => [];
+  List<Place> build() => [];
 
-  void addFavoritePlace(FavoritePlace place) {
+  void addFavoritePlace(Place place) {
     state = [place, ...state];
   }
 
-  void addFavoritePlaceAtIndex(int index, FavoritePlace place) {
+  void addFavoritePlaceAtIndex(int index, Place place) {
     state = [
       ...state.sublist(0, index),
       place,
@@ -26,4 +26,4 @@ class PlacesNotifier extends Notifier<List<FavoritePlace>> {
 }
 
 final placesNotifierProvider =
-    NotifierProvider<PlacesNotifier, List<FavoritePlace>>(PlacesNotifier.new);
+    NotifierProvider<PlacesNotifier, List<Place>>(PlacesNotifier.new);

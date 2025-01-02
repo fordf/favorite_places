@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:favorite_places/models/favorite_place.dart';
+import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/providers/places_provider.dart';
 import 'package:favorite_places/widgets/file_form_field.dart';
 // import 'package:favorite_places/widgets/image_input.dart';
@@ -27,7 +27,7 @@ class _NewPlaceFormState extends ConsumerState<NewPlaceForm> {
     });
     if (!formKey.currentState!.validate()) return;
     formKey.currentState!.save();
-    final place = FavoritePlace(title: placeTitle, image: _image!);
+    final place = Place(title: placeTitle, image: _image!);
     ref.read(placesNotifierProvider.notifier).addFavoritePlace(place);
     Navigator.of(context).pop();
   }
