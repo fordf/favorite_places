@@ -34,7 +34,9 @@ class FileFormField extends FormField<File> {
                   ),
                 ),
                 field.isValid
-                    ? Container()
+                    ? const SizedBox(
+                        height: 15,
+                      )
                     : Text(
                         field.errorText ?? "",
                         style: TextStyle(
@@ -55,8 +57,8 @@ class _FileFormFieldState extends FormFieldState<File> {
   @override
   FileFormField get widget => super.widget as FileFormField;
 
-  @override
-  void didChange(File? value) {
-    super.didChange(value);
-  }
+  // @override
+  // void didChange(File? value) {
+  //   super.didChange(value);
+  // }
 }

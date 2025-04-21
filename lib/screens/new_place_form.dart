@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/providers/places_provider.dart';
 import 'package:favorite_places/widgets/file_form_field.dart';
+import 'package:favorite_places/widgets/location_field.dart';
 // import 'package:favorite_places/widgets/image_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,6 +19,7 @@ class _NewPlaceFormState extends ConsumerState<NewPlaceForm> {
   final formKey = GlobalKey<FormState>();
   late String placeTitle;
   File? _image;
+  PlaceLocation? _location;
   bool isSubmitted = false;
   String? imageErrorText;
 
@@ -27,13 +29,18 @@ class _NewPlaceFormState extends ConsumerState<NewPlaceForm> {
     });
     if (!formKey.currentState!.validate()) return;
     formKey.currentState!.save();
-    final place = Place(title: placeTitle, image: _image!);
+    final place =
+        Place(title: placeTitle, image: _image!, location: _location!);
     ref.read(placesNotifierProvider.notifier).addFavoritePlace(place);
     Navigator.of(context).pop();
   }
 
   void onAddImage(File image) {
     _image = image;
+  }
+
+  void onAddLocation(PlaceLocation location) {
+    _location = location;
   }
 
   @override
@@ -80,6 +87,24 @@ class _NewPlaceFormState extends ConsumerState<NewPlaceForm> {
                 },
                 onSaved: (File? imageFile) {
                   _image = imageFile;
+                },
+              ),
+              const SizedBox(
+                height: 5,
+              ),
+              // LocationField(onChooseLocation: onAddLocation),
+              LocationFormField(
+                // autovalidateMode: AutovalidateMode.always,
+                errorColor:
+                    isSubmitted ? Theme.of(context).colorScheme.error : null,
+                validator: (location) {
+                  if (location == null) {
+                    return 'Location required';
+                  }
+                  return null;
+                },
+                onSaved: (PlaceLocation? location) {
+                  _location = location;
                 },
               ),
               const SizedBox(
