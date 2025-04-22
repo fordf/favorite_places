@@ -90,7 +90,7 @@ class _NewPlaceFormState extends ConsumerState<NewPlaceForm> {
               ContainerFormField<LocationField, PlaceLocation>(
                 errorColor: Theme.of(context).colorScheme.error,
                 validator: (imageFile) =>
-                    imageFile == null ? 'Image required' : null,
+                    imageFile == null ? 'Location required' : null,
                 onSaved: (PlaceLocation? location) {
                   _location = location;
                 },

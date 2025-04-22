@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:favorite_places/models/place.dart';
+import 'package:favorite_places/screens/map.dart';
 import "package:flutter/material.dart";
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
 
@@ -41,50 +43,21 @@ class _LocationFieldState extends State<LocationField> {
     if (!serviceEnabled) {
       serviceEnabled = await location.requestService();
       if (serviceEnabled) {
-        permissionGranted = await location.hasPermission();
-        if (permissionGranted == PermissionStatus.denied) {
-          permissionGranted = await location.requestPermission();
-          if (permissionGranted == PermissionStatus.granted) {
-            return location.getLocation();
-          }
-        }
+        return null;
       }
     }
-  }
-
-  void chooseCurrentLocation() async {
-    Location location = Location();
-
-    bool serviceEnabled;
-    PermissionStatus permissionGranted;
-    LocationData loc;
-
-    serviceEnabled = await location.serviceEnabled();
-    if (!serviceEnabled) {
-      serviceEnabled = await location.requestService();
-      if (!serviceEnabled) {
-        return;
-      }
-    }
-
     permissionGranted = await location.hasPermission();
     if (permissionGranted == PermissionStatus.denied) {
       permissionGranted = await location.requestPermission();
       if (permissionGranted != PermissionStatus.granted) {
-        return;
+        return null;
       }
     }
 
-    setState(() {
-      _gettingLocation = true;
-    });
+    return location.getLocation();
+  }
 
-    loc = await location.getLocation();
-    final latitude = loc.latitude;
-    final longitude = loc.longitude;
-
-    if (latitude == null || longitude == null) return;
-
+  void savePlace(double latitude, double longitude) async {
     final geocodeUrl = Uri.parse('$kGoogleMapsUrl'
         '?latlng=$latitude,$longitude'
         '&key=$kGoogleMapsKey'
@@ -104,6 +77,47 @@ class _LocationFieldState extends State<LocationField> {
       _gettingLocation = false;
     });
     widget.onChanged(placeLocation);
+  }
+
+  void chooseCurrentLocation() async {
+    setState(() {
+      _gettingLocation = true;
+    });
+
+    final loc = await getCurrentLocation();
+    if (loc == null) return;
+    final latitude = loc.latitude;
+    final longitude = loc.longitude;
+
+    if (latitude == null || longitude == null) return;
+    savePlace(latitude, longitude);
+  }
+
+  void chooseCustomLocation() async {
+    setState(() {
+      _gettingLocation = true;
+    });
+    final currectLocation = await getCurrentLocation();
+    final initLocation = (currectLocation == null ||
+            currectLocation.latitude == null ||
+            currectLocation.longitude == null)
+        ? const PlaceLocation(latitude: 100, longitude: 100, address: '')
+        : PlaceLocation(
+            latitude: currectLocation.latitude!,
+            longitude: currectLocation.longitude!,
+            address: '');
+    if (context.mounted) {
+      final location =
+          await Navigator.of(context).push<LatLng>(MaterialPageRoute(
+        builder: (ctx) => MapScreen(location: initLocation),
+      ));
+      if (location != null) {
+        savePlace(location.latitude, location.longitude);
+      }
+    }
+    setState(() {
+      _gettingLocation = false;
+    });
   }
 
   @override
@@ -146,7 +160,7 @@ class _LocationFieldState extends State<LocationField> {
               icon: const Icon(Icons.location_on),
             ),
             TextButton.icon(
-              onPressed: () {},
+              onPressed: chooseCustomLocation,
               label: const Text('Choose a location'),
               icon: const Icon(Icons.map),
             ),

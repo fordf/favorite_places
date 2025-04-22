@@ -45,7 +45,7 @@ class ContainerFormField<W extends Widget, T> extends FormField<T> {
                         ),
                       )
                     : const SizedBox(
-                        height: 15,
+                        height: 22,
                       )
               ],
             );
