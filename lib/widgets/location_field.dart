@@ -9,10 +9,13 @@ const kGoogleMapsUrl = String.fromEnvironment('GMAPS_URL');
 const kGoogleMapsKey = String.fromEnvironment('GMAPS_KEY');
 
 class LocationField extends StatefulWidget {
-  const LocationField(
-      {super.key, required this.onChooseLocation, required this.location});
-  final void Function(PlaceLocation) onChooseLocation;
-  final PlaceLocation? location;
+  const LocationField({
+    super.key,
+    required this.onChanged,
+    required this.value,
+  });
+  final void Function(PlaceLocation) onChanged;
+  final PlaceLocation? value;
 
   @override
   State<LocationField> createState() => _LocationFieldState();
@@ -22,13 +25,34 @@ class _LocationFieldState extends State<LocationField> {
   bool _gettingLocation = false;
 
   String get locationImageUrl {
-    final lat = widget.location!.latitude;
-    final long = widget.location!.longitude;
+    final lat = widget.value!.latitude;
+    final long = widget.value!.longitude;
     return 'https://maps.googleapis.com/maps/api/staticmap?center=$lat,$long'
         '&zoom=14&size=600x300&markers=color:red%7C$lat,$long&key=$kGoogleMapsKey';
   }
 
-  void getCurrentLocation() async {
+  Future<LocationData?> getCurrentLocation() async {
+    Location location = Location();
+
+    bool serviceEnabled;
+    PermissionStatus permissionGranted;
+
+    serviceEnabled = await location.serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await location.requestService();
+      if (serviceEnabled) {
+        permissionGranted = await location.hasPermission();
+        if (permissionGranted == PermissionStatus.denied) {
+          permissionGranted = await location.requestPermission();
+          if (permissionGranted == PermissionStatus.granted) {
+            return location.getLocation();
+          }
+        }
+      }
+    }
+  }
+
+  void chooseCurrentLocation() async {
     Location location = Location();
 
     bool serviceEnabled;
@@ -79,14 +103,14 @@ class _LocationFieldState extends State<LocationField> {
     setState(() {
       _gettingLocation = false;
     });
-    widget.onChooseLocation(placeLocation);
+    widget.onChanged(placeLocation);
   }
 
   @override
   Widget build(BuildContext context) {
     Widget content = _gettingLocation
         ? const CircularProgressIndicator()
-        : widget.location == null
+        : widget.value == null
             ? Text(
                 'No location!',
                 style: Theme.of(context)
@@ -107,12 +131,6 @@ class _LocationFieldState extends State<LocationField> {
             width: double.infinity,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              // image: file == null
-              //     ? null
-              //     : DecorationImage(
-              //         image: FileImage(file!),
-              //         fit: BoxFit.cover,
-              //       ),
               border: Border.all(
                 color: Theme.of(context).colorScheme.primary.withOpacity(.2),
               ),
@@ -123,7 +141,7 @@ class _LocationFieldState extends State<LocationField> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             TextButton.icon(
-              onPressed: getCurrentLocation,
+              onPressed: chooseCurrentLocation,
               label: const Text('Current Location'),
               icon: const Icon(Icons.location_on),
             ),
@@ -137,60 +155,4 @@ class _LocationFieldState extends State<LocationField> {
       ],
     );
   }
-}
-
-class LocationFormField extends FormField<PlaceLocation> {
-  final Color? errorColor;
-  LocationFormField({
-    super.key,
-    required this.errorColor,
-    FormFieldValidator<PlaceLocation>? validator,
-    super.onSaved,
-  }) : super(
-          validator: validator,
-          builder: (field) {
-            void onChangedHandler(PlaceLocation? value) {
-              print(value!.address.toString());
-              field.didChange(value);
-            }
-
-            bool isError = errorColor != null && !field.isValid;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  decoration: isError
-                      ? BoxDecoration(
-                          border: Border.all(color: errorColor),
-                          borderRadius: BorderRadius.circular(8),
-                        )
-                      : null,
-                  child: LocationField(
-                    onChooseLocation: onChangedHandler,
-                    location: field.value,
-                  ),
-                ),
-                field.isValid
-                    ? const SizedBox(
-                        height: 15,
-                      )
-                    : Text(
-                        field.errorText ?? "",
-                        style: TextStyle(
-                          color: errorColor,
-                          fontSize: 13.0,
-                        ),
-                      )
-              ],
-            );
-          },
-        );
-
-  @override
-  FormFieldState<PlaceLocation> createState() => _LocationFormFieldState();
-}
-
-class _LocationFormFieldState extends FormFieldState<PlaceLocation> {
-  @override
-  LocationFormField get widget => super.widget as LocationFormField;
 }

@@ -34,7 +34,17 @@ class PlaceListTile extends StatelessWidget {
         ),
         title: Text(
           place.title,
-          style: Theme.of(context).textTheme.titleMedium,
+          style: Theme.of(context)
+              .textTheme
+              .titleMedium!
+              .copyWith(color: Theme.of(context).colorScheme.onSurface),
+        ),
+        subtitle: Text(
+          place.location.address,
+          style: Theme.of(context)
+              .textTheme
+              .bodySmall!
+              .copyWith(color: Theme.of(context).colorScheme.onSurface),
         ),
       ),
     );

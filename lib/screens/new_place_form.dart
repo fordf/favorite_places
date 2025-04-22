@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:favorite_places/models/place.dart';
 import 'package:favorite_places/providers/places_provider.dart';
-import 'package:favorite_places/widgets/file_form_field.dart';
+import 'package:favorite_places/widgets/container_form_field.dart';
+import 'package:favorite_places/widgets/image_field.dart';
 import 'package:favorite_places/widgets/location_field.dart';
-// import 'package:favorite_places/widgets/image_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -75,37 +75,26 @@ class _NewPlaceFormState extends ConsumerState<NewPlaceForm> {
               const SizedBox(
                 height: 15,
               ),
-              FileFormField(
-                // autovalidateMode: AutovalidateMode.always,
-                errorColor:
-                    isSubmitted ? Theme.of(context).colorScheme.error : null,
-                validator: (imageFile) {
-                  if (imageFile == null) {
-                    return 'Image required';
-                  }
-                  return null;
-                },
+              ContainerFormField<ImageInput, File>(
+                errorColor: Theme.of(context).colorScheme.error,
+                validator: (imageFile) =>
+                    imageFile == null ? 'Image required' : null,
                 onSaved: (File? imageFile) {
                   _image = imageFile;
                 },
+                child: ImageInput.new,
               ),
               const SizedBox(
                 height: 5,
               ),
-              // LocationField(onChooseLocation: onAddLocation),
-              LocationFormField(
-                // autovalidateMode: AutovalidateMode.always,
-                errorColor:
-                    isSubmitted ? Theme.of(context).colorScheme.error : null,
-                validator: (location) {
-                  if (location == null) {
-                    return 'Location required';
-                  }
-                  return null;
-                },
+              ContainerFormField<LocationField, PlaceLocation>(
+                errorColor: Theme.of(context).colorScheme.error,
+                validator: (imageFile) =>
+                    imageFile == null ? 'Image required' : null,
                 onSaved: (PlaceLocation? location) {
                   _location = location;
                 },
+                child: LocationField.new,
               ),
               const SizedBox(
                 height: 20,
