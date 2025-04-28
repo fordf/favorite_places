@@ -13,6 +13,13 @@ class PlacesList extends ConsumerStatefulWidget {
 }
 
 class _PlacesListState extends ConsumerState<PlacesList> {
+  late Future<void> placesFuture;
+  @override
+  void initState() {
+    super.initState();
+    placesFuture = ref.read(placesNotifierProvider.notifier).loadPlaces();
+  }
+
   void _openAddPlaceForm() {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -45,40 +52,50 @@ class _PlacesListState extends ConsumerState<PlacesList> {
     final places = ref.watch(placesNotifierProvider);
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: false,
-        title: Text(
-          'Your Places',
-          style: textTheme.titleLarge,
-        ),
-        backgroundColor: Colors.black54,
-        // backgroundColor: Theme.of(context).colorScheme.shadow,
-        actions: [
-          IconButton(
-            onPressed: _openAddPlaceForm,
-            icon: const Icon(Icons.add),
+        appBar: AppBar(
+          centerTitle: false,
+          title: Text(
+            'Your Places',
+            style: textTheme.titleLarge,
           ),
-        ],
-      ),
-      body: places.isEmpty
-          ? Center(
-              child: Text(
-                'No places yet!',
-                style: textTheme.titleMedium,
-              ),
-            )
-          : Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ListView.builder(
-                itemCount: places.length,
-                itemBuilder: (ctx, i) => PlaceListTile(
-                  place: places[i],
-                  onDeletePlace: () {
-                    _onDeletePlace(i, places[i]);
-                  },
-                ),
-              ),
+          backgroundColor: Colors.black54,
+          // backgroundColor: Theme.of(context).colorScheme.shadow,
+          actions: [
+            IconButton(
+              onPressed: _openAddPlaceForm,
+              icon: const Icon(Icons.add),
             ),
-    );
+          ],
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: FutureBuilder(
+            future: placesFuture,
+            builder: (context, snapshot) =>
+                snapshot.connectionState == ConnectionState.waiting
+                    ? const Center(
+                        child: CircularProgressIndicator(),
+                      )
+                    : places.isEmpty
+                        ? Center(
+                            child: Text(
+                              'No places yet!',
+                              style: textTheme.titleMedium,
+                            ),
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ListView.builder(
+                              itemCount: places.length,
+                              itemBuilder: (ctx, i) => PlaceListTile(
+                                place: places[i],
+                                onDeletePlace: () {
+                                  _onDeletePlace(i, places[i]);
+                                },
+                              ),
+                            ),
+                          ),
+          ),
+        ));
   }
 }

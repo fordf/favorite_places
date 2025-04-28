@@ -29,9 +29,11 @@ class _NewPlaceFormState extends ConsumerState<NewPlaceForm> {
     });
     if (!formKey.currentState!.validate()) return;
     formKey.currentState!.save();
-    final place =
-        Place(title: placeTitle, image: _image!, location: _location!);
-    ref.read(placesNotifierProvider.notifier).addFavoritePlace(place);
+    ref.read(placesNotifierProvider.notifier).addFavoritePlace(
+          title: placeTitle,
+          image: _image!,
+          location: _location!,
+        );
     Navigator.of(context).pop();
   }
 
